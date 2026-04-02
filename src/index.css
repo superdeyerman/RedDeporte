@@ -1,0 +1,97 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  
+  --color-army-green: #1a2e1a;
+  --color-army-green-light: #2d4a2d;
+  --color-army-green-dark: #0f1a0f;
+}
+
+@layer base {
+  body {
+    @apply bg-black text-white font-sans antialiased;
+  }
+}
+
+.army-gradient {
+  background: linear-gradient(135deg, #1a2e1a 0%, #000000 100%);
+}
+
+.army-border {
+  @apply border border-army-green-light/30;
+}
+
+.army-card {
+  @apply bg-army-green-dark/50 border border-army-green-light/30 backdrop-blur-sm;
+}
+
+.btn-army {
+  @apply bg-army-green-light text-white font-bold py-3 px-6 rounded-none uppercase tracking-widest hover:bg-white hover:text-black transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.input-army {
+  @apply bg-black border border-army-green-light/50 text-white p-3 rounded-none focus:outline-none focus:border-white transition-colors;
+}
+
+.checkbox-army {
+  @apply w-6 h-6 border-2 border-army-green-light bg-black appearance-none checked:bg-army-green-light checked:border-white transition-all cursor-pointer relative;
+}
+
+@keyframes progress-stripe {
+  from { background-position: 0 0; }
+  to { background-position: 40px 0; }
+}
+
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+
+@keyframes flicker {
+  0% { opacity: 0.97; }
+  5% { opacity: 0.95; }
+  10% { opacity: 0.9; }
+  15% { opacity: 0.95; }
+  20% { opacity: 0.98; }
+  25% { opacity: 0.95; }
+  30% { opacity: 0.9; }
+  35% { opacity: 0.95; }
+  40% { opacity: 0.98; }
+  45% { opacity: 0.95; }
+  50% { opacity: 0.9; }
+  55% { opacity: 0.95; }
+  60% { opacity: 0.98; }
+  65% { opacity: 0.95; }
+  70% { opacity: 0.9; }
+  75% { opacity: 0.95; }
+  80% { opacity: 0.98; }
+  85% { opacity: 0.95; }
+  90% { opacity: 0.9; }
+  95% { opacity: 0.95; }
+  100% { opacity: 0.98; }
+}
+
+.scanline {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 10px;
+  background: linear-gradient(to bottom, transparent, rgba(45, 74, 45, 0.1), transparent);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 1000;
+  animation: scanline 8s linear infinite;
+}
+
+.flicker {
+  animation: flicker 0.15s infinite;
+}
+
+.checkbox-army:checked::after {
+  content: '✓';
+  @apply absolute inset-0 flex items-center justify-center text-white text-sm font-bold;
+}

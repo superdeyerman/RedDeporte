@@ -1,0 +1,183 @@
+// ===============================================================
+// Assumed Data Model
+// ===============================================================
+//
+// Collection: /users/{userId}
+// Fields:
+//   - uid: string (required)
+//   - displayName: string
+//   - email: string (required)
+//   - photoURL: string
+//   - age: number
+//   - weight: number
+//   - height: number
+//   - sex: string
+//   - physicalLevel: string (Beginner, Intermediate, Advanced)
+//   - goal: string (Mass, Fat Loss, Performance)
+//   - measurements: map { chest, waist, legs, arms }
+//   - habits: map { nutrition, exercise, sleep }
+//   - rank: string (Recruit, Soldier, Warrior, Elite, Commander)
+//   - streak: number
+//   - lastMissionDate: string
+//   - totalPoints: number
+//   - isProfileComplete: bool
+//
+// Collection: /users/{userId}/missions/{date}
+// Fields:
+//   - date: string (required)
+//   - breakfast: bool
+//   - lunch: bool
+//   - snack: bool
+//   - dinner: bool
+//   - workout: bool
+//   - mental: bool
+//   - isCompleted: bool
+//
+// Collection: /users/{userId}/plans/{date}
+// Fields:
+//   - date: string (required)
+//   - nutrition: map { breakfast, lunch, snack, dinner }
+//   - workout: map { exercises: list }
+//   - mentalMission: string
+//
+// Collection: /posts/{postId}
+// Fields:
+//   - uid: string (required)
+//   - authorName: string
+//   - authorPhoto: string
+//   - content: string (required)
+//   - imageUrl: string
+//   - createdAt: timestamp (required)
+//
+// Collection: /events/{eventId}
+// Fields:
+//   - title: string (required)
+//   - description: string
+//   - date: timestamp (required)
+//   - location: map { lat, lng, address }
+//   - attendees: list (uids)
+//
+// ===============================================================
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && 
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+         (request.auth.token.email == "reverenciamajestad@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'email', 'role']) &&
+             data.uid is string &&
+             data.email is string &&
+             data.role in ['recruit', 'admin'] &&
+             (!('displayName' in data) || data.displayName is string) &&
+             (!('age' in data) || (data.age is number && data.age > 0)) &&
+             (!('weight' in data) || (data.weight is number && data.weight > 0)) &&
+             (!('height' in data) || (data.height is number && data.height > 0)) &&
+             (!('streak' in data) || data.streak is number) &&
+             (!('totalPoints' in data) || data.totalPoints is number);
+    }
+
+    function isValidCompetition(data) {
+      return data.keys().hasAll(['title', 'type', 'startDate', 'endDate', 'status']) &&
+             data.title is string && data.title.size() > 0 &&
+             data.type in ['Transformation', 'Habits', 'Performance'] &&
+             data.startDate is timestamp &&
+             data.endDate is timestamp &&
+             data.status in ['Upcoming', 'Active', 'Validating', 'Finished'];
+    }
+
+    function isValidEvidence(data) {
+      return data.keys().hasAll(['competitionId', 'userId', 'url', 'timestamp']) &&
+             data.competitionId is string &&
+             data.userId == request.auth.uid &&
+             data.url is string &&
+             data.timestamp is timestamp;
+    }
+
+    function isValidContribution(data) {
+      return data.keys().hasAll(['competitionId', 'amount', 'type', 'timestamp']) &&
+             data.competitionId is string &&
+             data.amount is number && data.amount > 0 &&
+             data.type in ['User', 'Sponsor', 'Viewer'] &&
+             data.timestamp is timestamp;
+    }
+
+    function isValidPost(data) {
+      return data.keys().hasAll(['uid', 'content', 'createdAt']) &&
+             data.uid == request.auth.uid &&
+             data.content is string && data.content.size() > 0 && data.content.size() < 1000 &&
+             data.createdAt is timestamp;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isAuthenticated(); // Allow reading other users for ranking/community
+      allow create: if isAuthenticated() && isValidUser(request.resource.data) && (isOwner(userId) || isAdmin());
+      allow update: if isAuthenticated() && isValidUser(request.resource.data) && (isOwner(userId) || isAdmin());
+      
+      match /missions/{date} {
+        allow read, write: if isOwner(userId) || isAdmin();
+      }
+      
+      match /plans/{date} {
+        allow read, write: if isOwner(userId) || isAdmin();
+      }
+    }
+
+    match /posts/{postId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isValidPost(request.resource.data);
+      allow update, delete: if isAuthenticated() && (request.auth.uid == resource.data.uid || isAdmin());
+    }
+
+    match /events/{eventId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isAdmin();
+      allow update: if isAuthenticated() && 
+                    request.resource.data.diff(resource.data).affectedKeys().hasOnly(['attendees']);
+    }
+
+    match /competitions/{competitionId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isAdmin();
+      // Allow users to join a competition
+      allow update: if isAuthenticated() && 
+                    request.resource.data.diff(resource.data).affectedKeys().hasOnly(['participants']);
+    }
+
+    match /evidence/{evidenceId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isValidEvidence(request.resource.data);
+      allow update, delete: if isAdmin();
+      // Allow community voting
+      allow update: if isAuthenticated() && 
+                    request.resource.data.diff(resource.data).affectedKeys().hasOnly(['votes']);
+    }
+
+    match /contributions/{contributionId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isValidContribution(request.resource.data);
+      allow update, delete: if isAdmin();
+    }
+  }
+}

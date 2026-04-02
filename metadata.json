@@ -1,0 +1,5 @@
+{
+  "name": "PROYECTO 90: EL CUARTEL",
+  "description": "Transformación física y mental en 90 días. Disciplina, calistenia y nutrición deportiva.",
+  "requestFramePermissions": ["geolocation"]
+}

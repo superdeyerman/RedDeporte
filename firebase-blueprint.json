@@ -1,0 +1,221 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "User's disciplinary profile and progress stats.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "displayName": { "type": "string" },
+        "email": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "age": { "type": "number" },
+        "weight": { "type": "number" },
+        "height": { "type": "number" },
+        "sex": { "type": "string" },
+        "physicalLevel": { "type": "string", "enum": ["Beginner", "Intermediate", "Advanced"] },
+        "goal": { "type": "string", "enum": ["Mass", "Fat Loss", "Performance"] },
+        "measurements": {
+          "type": "object",
+          "properties": {
+            "chest": { "type": "number" },
+            "waist": { "type": "number" },
+            "legs": { "type": "number" },
+            "arms": { "type": "number" }
+          }
+        },
+        "habits": {
+          "type": "object",
+          "properties": {
+            "nutrition": { "type": "string" },
+            "exercise": { "type": "string" },
+            "sleep": { "type": "string" }
+          }
+        },
+        "rank": { "type": "string", "enum": ["Recruit", "Soldier", "Warrior", "Elite", "Commander"] },
+        "streak": { "type": "number" },
+        "lastMissionDate": { "type": "string" },
+        "totalPoints": { "type": "number" },
+        "isProfileComplete": { "type": "boolean" },
+        "role": { "type": "string", "enum": ["recruit", "admin"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "Competition": {
+      "title": "Weekly Competition",
+      "description": "Weekly challenge with a prize pool.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "type": { "type": "string", "enum": ["Transformation", "Habits", "Performance"] },
+        "startDate": { "type": "string", "format": "date-time" },
+        "endDate": { "type": "string", "format": "date-time" },
+        "status": { "type": "string", "enum": ["Upcoming", "Active", "Validating", "Finished"] },
+        "prizePool": { "type": "number" },
+        "participants": { "type": "array", "items": { "type": "string" } },
+        "rules": { "type": "array", "items": { "type": "string" } },
+        "winnerId": { "type": "string" }
+      },
+      "required": ["title", "type", "startDate", "endDate", "status"]
+    },
+    "Evidence": {
+      "title": "Competition Evidence",
+      "description": "User-submitted evidence for a competition.",
+      "type": "object",
+      "properties": {
+        "competitionId": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "type": { "type": "string", "enum": ["photo", "video"] },
+        "url": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "votes": { "type": "array", "items": { "type": "string" } },
+        "isValidated": { "type": "boolean" },
+        "metrics": {
+          "type": "object",
+          "properties": {
+            "value": { "type": "number" },
+            "unit": { "type": "string" }
+          }
+        }
+      },
+      "required": ["competitionId", "userId", "url", "timestamp"]
+    },
+    "Contribution": {
+      "title": "Prize Pool Contribution",
+      "description": "Contribution to a competition's prize pool.",
+      "type": "object",
+      "properties": {
+        "competitionId": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "amount": { "type": "number" },
+        "type": { "type": "string", "enum": ["User", "Sponsor", "Viewer"] },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["competitionId", "amount", "type", "timestamp"]
+    },
+    "Mission": {
+      "title": "Daily Mission",
+      "description": "Daily checklist for nutrition, workout, and mental missions.",
+      "type": "object",
+      "properties": {
+        "date": { "type": "string" },
+        "breakfast": { "type": "boolean" },
+        "lunch": { "type": "boolean" },
+        "snack": { "type": "boolean" },
+        "dinner": { "type": "boolean" },
+        "workout": { "type": "boolean" },
+        "mental": { "type": "boolean" },
+        "isCompleted": { "type": "boolean" }
+      },
+      "required": ["date"]
+    },
+    "Plan": {
+      "title": "Generated Plan",
+      "description": "Personalized nutrition and workout plan for a specific day.",
+      "type": "object",
+      "properties": {
+        "date": { "type": "string" },
+        "nutrition": {
+          "type": "object",
+          "properties": {
+            "breakfast": { "type": "string" },
+            "lunch": { "type": "string" },
+            "snack": { "type": "string" },
+            "dinner": { "type": "string" }
+          }
+        },
+        "workout": {
+          "type": "object",
+          "properties": {
+            "exercises": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "sets": { "type": "string" },
+                  "reps": { "type": "string" },
+                  "desc": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "mentalMission": { "type": "string" }
+      },
+      "required": ["date"]
+    },
+    "Post": {
+      "title": "Community Post",
+      "description": "Post shared by a user in the community feed.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "authorName": { "type": "string" },
+        "authorPhoto": { "type": "string" },
+        "content": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "content", "createdAt"]
+    },
+    "Event": {
+      "title": "Real Event",
+      "description": "Weekly group events for training or community building.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "location": {
+          "type": "object",
+          "properties": {
+            "lat": { "type": "number" },
+            "lng": { "type": "number" },
+            "address": { "type": "string" }
+          }
+        },
+        "attendees": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["title", "date"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profile and stats."
+    },
+    "/users/{userId}/missions/{date}": {
+      "schema": "Mission",
+      "description": "User's daily mission progress."
+    },
+    "/users/{userId}/plans/{date}": {
+      "schema": "Plan",
+      "description": "User's daily personalized plan."
+    },
+    "/posts/{postId}": {
+      "schema": "Post",
+      "description": "Community feed posts."
+    },
+    "/events/{eventId}": {
+      "schema": "Event",
+      "description": "Weekly community events."
+    },
+    "/competitions/{competitionId}": {
+      "schema": "Competition",
+      "description": "Weekly challenges."
+    },
+    "/evidence/{evidenceId}": {
+      "schema": "Evidence",
+      "description": "Competition evidence submissions."
+    },
+    "/contributions/{contributionId}": {
+      "schema": "Contribution",
+      "description": "Prize pool contributions."
+    }
+  }
+}
